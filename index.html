@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Valorant Points</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- EmailJS (v3) -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <!-- Конфетти -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #f2f2f2;
+      --text-color: #333333;
+      --header-bg: #111111;
+      --header-text: #ffffff;
+      --card-bg: #fdacac;
+      --card-text: #333333;
+      --primary-color: #ff0000;
+      --secondary-color: #007bff;
+      --accent-color: #0056b3;
+      --footer-bg: #111111;
+      --footer-text: #ffffff;
+    }
+    /* ОБЩИЕ СТИЛИ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      text-decoration: none;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background 0.3s, color 0.3s;
+    }
+    .container { 
+      width: 90%; 
+      max-width: 1200px; 
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .header {
+      background: var(--header-bg); 
+      color: var(--header-text);
+      padding: 10px 0; 
+      position: sticky; 
+      top: 0; 
+      z-index: 999;
+      transition: background 0.3s;
+    }
+    .nav {
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+    }
+    .nav-menu {
+      list-style: none; 
+      display: flex; 
+      gap: 20px;
+    }
+    .nav-menu li a {
+      color: var(--header-text); 
+      font-weight: bold; 
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-menu li a:hover {
+      color: var(--primary-color);
+    }
+    .logo img {
+      height: 40px;
+    }
+
+    /* THEME SWITCH */
+    .theme-switch {
+      display: inline-flex; 
+      align-items: center;
+    }
+    .theme-icon {
+      font-size: 18px; 
+      margin-right: 5px;
+    }
+    .switch {
+      position: relative; 
+      display: inline-block; 
+      width: 50px; 
+      height: 24px;
+    }
+    .switch input {
+      opacity: 0; 
+      width: 0; 
+      height: 0;
+    }
+    .slider {
+      position: absolute; 
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute; 
+      content: ""; 
+      height: 16px; 
+      width: 16px;
+      left: 4px; bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: var(--primary-color);
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    /* HERO */
+    .hero {
+      height: 70vh; 
+      min-height: 400px; 
+      display: flex; 
+      align-items: center;
+      background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                url(https://i.imgur.com/AupYuJH.jpg) no-repeat center/cover;
+      color: white; 
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 3em; 
+      margin-bottom: 20px;
+    }
+    .hero p {
+      font-size: 1.2em; 
+      margin-bottom: 30px;
+    }
+    .btn {
+      background: var(--primary-color); 
+      color: white;
+      padding: 12px 28px; 
+      border-radius: 30px; 
+      font-weight: bold;
+      transition: transform 0.3s, background 0.3s;
+      display: inline-block;
+    }
+    .btn:hover {
+      transform: scale(1.05); 
+      background: #d00;
+    }
+
+    /* КАТАЛОГ */
+    .catalog {
+      padding: 60px 0;
+    }
+    .catalog h2 {
+      text-align: center; 
+      margin-bottom: 40px;
+    }
+    .product-list {
+      display: flex; 
+      flex-wrap: wrap; 
+      justify-content: center; 
+      gap: 30px;
+    }
+    .product-card {
+      background: var(--card-bg); 
+      border-radius: 10px;
+      width: 220px; 
+      padding: 20px; 
+      text-align: center;
+      transition: transform 0.3s;
+      color: var(--card-text);
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+    }
+    .product-card img {
+      width: 80%; 
+      max-height: 150px; 
+      object-fit: contain;
+      margin-bottom: 10px;
+    }
+    .product-card h3 {
+      font-size: 1.1em; 
+      margin-bottom: 5px;
+    }
+    .product-card p {
+      font-size: 0.9em; 
+      margin-bottom: 10px;
+    }
+    .price {
+      font-weight: bold; 
+      font-size: 1.2em;
+      margin-bottom: 15px; 
+      color: var(--primary-color);
+    }
+    .button-row {
+      display: flex; 
+      justify-content: space-between;
+    }
+    .button-row button {
+      flex: 1; 
+      padding: 8px 5px; 
+      border: none; 
+      border-radius: 5px;
+      cursor: pointer; 
+      font-weight: bold; 
+      transition: background 0.3s;
+    }
+    .details-btn {
+      background: #555; 
+      color: #fff;
+    }
+    .details-btn:hover { background: #333; }
+    .buy-btn {
+      background: var(--secondary-color); 
+      color: #fff;
+    }
+    .buy-btn:hover {
+      background: var(--accent-color);
+    }
+
+    /* INFO */
+    .info {
+      padding: 40px 0;
+    }
+    .info h2 {
+      text-align: center; 
+      margin-bottom: 20px;
+    }
+    .info ol {
+      list-style: decimal; 
+      margin-left: 40px; 
+      margin-top: 10px;
+    }
+    .info ol li {
+      margin-bottom: 10px;
+    }
+
+    /* SUPPORT */
+    .support {
+      padding: 40px 0; 
+      text-align: center;
+    }
+    .support h2 {
+      margin-bottom: 20px;
+    }
+    .support-icons {
+      display: flex; 
+      justify-content: center; 
+      gap: 30px; 
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .support-icons a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--text-color);
+      transition: transform 0.3s;
+    }
+    .support-icons a:hover {
+      transform: scale(1.1);
+    }
+    .support-icons img {
+      width: 50px; 
+      height: 50px; 
+      margin-bottom: 10px;
+    }
+
+    /* SECTION BLOCK */
+    .section-block {
+      padding: 60px 0; 
+      background: #fafafa;
+    }
+    .section-block h1 {
+      text-align: center; 
+      margin-bottom: 20px;
+    }
+    .section-block p {
+      text-align: center; 
+      max-width: 800px; 
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* FOOTER */
+    .footer {
+      background: var(--footer-bg);
+      color: var(--footer-text);
+      text-align: center; 
+      padding: 20px 0; 
+      margin-top: 40px;
+      transition: background 0.3s;
+    }
+    .footer a {
+      color: var(--footer-text);
+      text-decoration: underline;
+    }
+    .disclaimer {
+      margin-top: 10px; 
+      font-size: 0.9em; 
+      color: #bbb;
+    }
+
+    /* MODAL (ОПЛАТА) */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); display: none; align-items: center;
+      justify-content: center; z-index: 1000;
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+    .modal {
+      background: var(--bg-color); color: var(--text-color);
+      padding: 20px; border-radius: 8px; 
+      width: 90%; max-width: 450px;
+      position: relative;
+    }
+    .close-btn {
+      position: absolute; top: 10px; right: 10px;
+      background: none; border: none; color: var(--text-color);
+      font-size: 24px; cursor: pointer;
+    }
+    h3 {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block; 
+      margin: 10px 0 5px;
+    }
+    .input-text {
+      width: 100%; padding: 8px; margin-bottom: 15px;
+      border: 1px solid #ccc; border-radius: 4px;
+    }
+    .generate-btn, .check-btn {
+      background: var(--primary-color); color: #fff; padding: 10px; border: none;
+      cursor: pointer; transition: background 0.3s; display: inline-block;
+      margin-right: 10px; margin-top: 5px;
+    }
+    .generate-btn:hover, .check-btn:hover {
+      background: #d00;
+    }
+    #statusMsg {
+      margin-top: 10px; font-weight: bold; white-space: pre-wrap;
+    }
+    .qr-section {
+      margin-top: 15px; text-align: center; display: none;
+    }
+    .qr-section img {
+      margin: 10px 0; max-width: 200px;
+    }
+    .link-result {
+      word-break: break-all; font-size: 14px; color: var(--secondary-color);
+    }
+    .link-result a {
+      color: var(--secondary-color); text-decoration: underline;
+    }
+
+    /* MODAL ДЕТАЛЕЙ (ОТЗЫВЫ) */
+    .product-details-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); display: none; align-items: center;
+      justify-content: center; z-index: 1000;
+    }
+    .product-details-overlay.show {
+      display: flex;
+    }
+    .product-details-modal {
+      background: var(--bg-color); color: var(--text-color);
+      padding: 20px; border-radius: 8px; 
+      width: 90%; max-width: 500px;
+      position: relative;
+    }
+    .details-close-btn {
+      position: absolute; top: 10px; right: 10px;
+      background: none; border: none; color: var(--text-color);
+      font-size: 24px; cursor: pointer;
+    }
+    .review-list {
+      margin: 15px 0;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .no-reviews {
+      color: #777;
+      font-style: italic;
+    }
+    .review-item {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.05);
+    }
+    .review-stars {
+      color: #ffaa00;
+      margin-bottom: 5px;
+    }
+    .review-text {
+      font-size: 0.9em;
+    }
+    .review-btn {
+      background: #f0f0f0;
+      color: #333;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    .review-form {
+      margin: 15px 0;
+      padding: 10px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 5px;
+      display: none;
+    }
+    .star-rating {
+      margin: 5px 0 10px 0;
+      font-size: 24px;
+      color: #ccc;
+      cursor: pointer;
+    }
+    .star {
+      display: inline-block;
+      transition: transform 0.1s;
+    }
+    .star:hover {
+      transform: scale(1.2);
+    }
+    .star.selected {
+      color: #ffaa00;
+    }
+    .review-form textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 5px 0;
+      resize: vertical;
+    }
+    .review-form button {
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+    .review-form button:hover {
+      background: var(--accent-color);
+    }
+    .autocheck-timer {
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #777;
+    }
+
+    /* FADE-IN */
+    .fade-in-on-scroll {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s, transform 0.6s;
+    }
+    .fade-in-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* SCROLL TOP */
+    .scroll-top-btn {
+      position: fixed; bottom: 20px; right: 20px;
+      width: 40px; height: 40px; background: var(--primary-color);
+      border: none; padding: 10px; border-radius: 50%;
+      font-size: 20px; cursor: pointer; display: none;
+      z-index: 2000; transition: background 0.3s;
+    }
+    .scroll-top-btn:hover { background: #d00; }
+
+    /* Адаптив */
+    @media (max-width:768px) {
+      .hero h1 { font-size:28px; }
+      .hero p  { font-size:16px; }
+      .btn { padding:12px24px; font-size:14px; }
+      .nav-menu { flex-wrap:wrap; gap:10px; }
+      .product-list { gap:20px; }
+      .product-card { width:180px; padding:15px; }
+    }
+    @media (max-width:480px) {
+      .hero { padding:60px0; }
+      .hero h1 { font-size:24px; }
+      .hero p  { font-size:14px; }
+      .btn     { padding:10px20px; font-size:12px; }
+      .product-card { width:150px; padding:10px; }
+      .button-row { flex-direction:column; gap:8px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="nav container">
+      <ul class="nav-menu">
+        <li><a href="#hero" class="active">Главная</a></li>
+        <li><a href="#support">Поддержка</a></li>
+        <li><a href="offer.html">Соглашение</a></li>
+        <li><a href="policy.html">Конфиденциальность</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ======= HERO ======= -->
+  <section class="hero fade-in-on-scroll" id="hero">
+    <div class="container">
+      <h1>Valorant Points</h1>
+      <p>Покупайте поинты быстро и безопасно, без переплат</p>
+      <a href="#catalog" class="btn">Смотреть каталог</a>
+    </div>
+  </section>
+
+  <!-- ======= CATALOG (30+ товаров) ======= -->
+  <section class="catalog fade-in-on-scroll" id="catalog">
+    <div class="container">
+      <h2>Наш каталог кодов</h2>
+      <div class="product-list">
+
+        <!-- 1) 375 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="375 VP">
+          <h3>375 Valorant Points</h3>
+          <p>Код на 375 VP</p>
+          <div class="price">349 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('375 Valorant Points','375VP',349)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('375 Valorant Points',349)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 2) 500 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="500 VP">
+          <h3>500 Valorant Points</h3>
+          <p>Код на 500 VP</p>
+          <div class="price">459 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('500 Valorant Points','500VP',459)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('500 Valorant Points',459)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 3) 600 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="600 VP">
+          <h3>600 Valorant Points</h3>
+          <p>Код на 600 VP</p>
+          <div class="price">549 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('600 Valorant Points','600VP',549)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('600 Valorant Points',549)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 4) 700 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="700 VP">
+          <h3>700 Valorant Points</h3>
+          <p>Код на 700 VP</p>
+          <div class="price">629 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('700 Valorant Points','700VP',629)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('700 Valorant Points',629)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 5) 1000 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="1000 VP">
+          <h3>1000 Valorant Points</h3>
+          <p>Код на 1000 VP</p>
+          <div class="price">900 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('1000 Valorant Points','1000VP',900)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('1000 Valorant Points',900)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 6) 1650 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="1650 VP">
+          <h3>1650 Valorant Points</h3>
+          <p>Код на 1650 VP</p>
+          <div class="price">1390 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('1650 Valorant Points','1650VP',1390)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('1650 Valorant Points',1390)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 7) 2200 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="2200 VP">
+          <h3>2200 Valorant Points</h3>
+          <p>Код на 2200 VP</p>
+          <div class="price">1790 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('2200 Valorant Points','2200VP',1790)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('2200 Valorant Points',1790)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 8) 3650 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="3650 VP">
+          <h3>3650 Valorant Points</h3>
+          <p>Код на 3650 VP</p>
+          <div class="price">2890 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('3650 Valorant Points','3650VP',2890)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('3650 Valorant Points',2890)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 9) 5000 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="5000 VP">
+          <h3>5000 Valorant Points</h3>
+          <p>Код на 5000 VP</p>
+          <div class="price">5200 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('5000 Valorant Points','5000VP',5200)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('5000 Valorant Points',5200)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 10) 7500 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="7500 VP">
+          <h3>7500 Valorant Points</h3>
+          <p>Код на 7500 VP</p>
+          <div class="price">6890 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('7500 Valorant Points','7500VP',6890)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('7500 Valorant Points',6890)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 10) 11500 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="11500 VP">
+          <h3>11500 Valorant Points</h3>
+          <p>Код на 11500 VP</p>
+          <div class="price">13990 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('11500 Valorant Points','11500',13990)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('11500 Valorant Points',13990)">Купить</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- INFO -->
+  <section class="info fade-in-on-scroll" id="info">
+    <div class="container">
+      <h2>Как это работает?</h2>
+      <ol>
+        <li>Выберите подходящее количество Valorant Points из каталога</li>
+        <li>Нажмите на кнопку «Купить» и укажите свой e-mail</li>
+        <li>Оплатите покупку любым удобным способом</li>
+        <li>Получите код активации на указанную почту в течение 5-10 минут</li>
+        <li>Активируйте код в игре через официальный сайт Riot Games</li>
+        <li>Также вы можете ознакомиться с более подробным FAQ на нашем сайте <a href="faq.html" target="_blank">FAQ</a></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- SUPPORT -->
+  <section class="support fade-in-on-scroll" id="support">
+    <div class="container">
+      <h2>Поддержка и контакты</h2>
+      <p>Если возникли вопросы, свяжитесь с нами:</p>
+      <div class="support-icons">
+        <a href="https://t.me/Beast_brawl" target="_blank">
+          <img src="https://i.imgur.com/x45z8on.png" alt="Telegram">
+          Telegram
+        </a>
+        <a href="mailto:info@valorant.su">
+          <img src="https://i.imgur.com/vsRyFJe.png" alt="Email">
+          Почта
+        </a>
+        <a href="https://t.me/Beast_brawl" target="_blank">
+          <img src="https://i.imgur.com/x45z8on.png" alt="Manager">
+          Менеджер
+        </a>
+      </div>
+      <p style="margin-top:20px;">Мы ответим в течение 24 часов. Спасибо за использование!</p>
+    </div>
+  </section>
+
+  <!-- TERMS -->
+  <section class="section-block fade-in-on-scroll" id="terms">
+    <h1>Пользовательское соглашение (Оферта)</h1>
+    <p>Настоящее соглашение является публичной офертой.</p>
+    <p>Используя сайт (valorant.su), вы принимаете эти условия.</p>
+    <p><em>Дата последнего обновления: 31.01.2025 Ознакомиться можно на нашем сайте - <a href="offer.html" target="_blank">Пользовательское соглашение</a></em></p>
+  </section>
+
+  <!-- PRIVACY -->
+  <section class="section-block fade-in-on-scroll" id="privacy">
+    <h1>Политика конфиденциальности</h1>
+    <p>Определяет порядок обработки персональных данных (ФЗ-152) на сайте valorant.su</p>
+    <p><em>Дата последнего обновления: 31.01.2025 Политика конфиденциальности Ознакомиться можно на нашем сайте - <a href="policy.html" target="_blank">Политика конфиденциальности</a></em></p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p>© 2025 Valorant Points. Все права защищены.</p>
+      <p>
+        <strong>ИП Филимонов Михаил Николаевич</strong>, ИНН: 150204790739 |
+        E-mail: info@valorant.su
+      </p>
+      <p>
+        <a href="offer.html">Пользовательское соглашение</a> |
+        <a href="policy.html">Политика конфиденциальности</a>
+      </p>
+      <p class="disclaimer">
+        *VALORANT — торговая марка Riot Games. Не является официальным представительством Riot Games.
+      </p>
+    </div>
+  </footer>
+
+  <!-- MODAL (Оплата) -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      <h3 id="modalTitle">Покупка</h3>
+
+      <label for="emailInput">Ваш e-mail:</label>
+      <input type="email" id="emailInput" class="input-text" placeholder="example@mail.ru">
+
+      <button class="generate-btn" onclick="simulatePayment()">Сгенерировать оплату</button>
+      <button class="check-btn" onclick="simulateCheck()">Проверить оплату</button>
+
+      <p id="statusMsg"></p>
+    </div>
+  </div>
+
+  <!-- MODAL (Подробнее + отзывы) -->
+  <div class="product-details-overlay" id="productDetailsOverlay">
+    <div class="product-details-modal">
+      <button class="details-close-btn" onclick="closeDetailsModal()">&times;</button>
+      <h2 id="detailsTitle"></h2>
+      <p id="detailsDesc"></p>
+
+      <h3>Отзывы</h3>
+      <div class="review-list" id="reviewList"></div>
+      <button class="review-btn" id="leaveReviewBtn" onclick="toggleReviewForm()">Оставить отзыв</button>
+
+      <div class="review-form" id="reviewForm">
+        <label>Ваша оценка (1–5):</label>
+        <div class="star-rating" id="starRating">
+          <span class="star" data-star="1">★</span>
+          <span class="star" data-star="2">★</span>
+          <span class="star" data-star="3">★</span>
+          <span class="star" data-star="4">★</span>
+          <span class="star" data-star="5">★</span>
+        </div>
+        <label for="reviewText">Ваш комментарий:</label>
+        <textarea id="reviewText" rows="3"></textarea>
+        <button onclick="submitReview()">Сохранить</button>
+      </div>
+
+      <button class="buy-btn" id="detailsBuyBtn">Купить сейчас</button>
+    </div>
+  </div>
+
+  <!-- SCROLL TOP -->
+  <button class="scroll-top-btn" id="scrollTopBtn">↑</button>
+
+  <script>
+    /*************************************************************
+     * EmailJS INIT
+     *************************************************************/
+    emailjs.init("Pqx7K7cWz3fcw5NOZ"); // <-- подставьте ваш ключ
+    const EMAILJS_SERVICE_ID = "service_4rqximk";
+    const EMAILJS_TEMPLATE_ID= "template_m5d1tk4";
+
+    /*************************************************************
+     * Global Vars
+     *************************************************************/
+    let currentItemName   = "";
+    let currentItemPrice  = 0;
+    let userEmail         = "";
+    let starSelected      = 0;
+    let demoReviews       = {};
+
+    /*************************************************************
+     * Payment Demo Functions (без API)
+     *************************************************************/
+    function simulatePayment() {
+      userEmail = document.getElementById('emailInput').value.trim();
+      if(!userEmail) {
+        alert("Введите e-mail!");
+        return;
+      }
+      
+      document.getElementById('statusMsg').textContent = "Демонстрационная версия: оплата сразу будет успешной.";
+      setTimeout(() => {
+        document.getElementById('statusMsg').textContent = "Оплата успешна! Отправляем код...";
+        sendEmailWithCode(userEmail, currentItemName);
+      }, 1500);
+    }
+
+    function simulateCheck() {
+      userEmail = document.getElementById('emailInput').value.trim();
+      if(!userEmail) {
+        alert("Введите e-mail!");
+        return;
+      }
+      
+      document.getElementById('statusMsg').textContent = "Проверка платежа...";
+      setTimeout(() => {
+        document.getElementById('statusMsg').textContent = "Оплата подтверждена! Отправляем код...";
+        sendEmailWithCode(userEmail, currentItemName);
+      }, 1000);
+    }
+
+    /*************************************************************
+     * Modal Payment Functions
+     *************************************************************/
+    function openPaymentModal(itemName, price){
+      currentItemName = itemName;
+      currentItemPrice = price;
+      document.getElementById('modalTitle').textContent = 
+        `Покупка: ${itemName} (${price} руб.)`;
+
+      document.getElementById('statusMsg').textContent = "";
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+    
+    function closeModal(){
+      document.getElementById('modalOverlay').classList.remove('show');
+    }
+    
+    document.getElementById('modalOverlay').addEventListener('click', e=>{
+      if(e.target.id==='modalOverlay') closeModal();
+    });
+
+    /*************************************************************
+     * Send code via EmailJS
+     *************************************************************/
+    function generateValorantCode(){
+      const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let code="VP-";
+      for(let i=0; i<10; i++){
+        code += chars[Math.floor(Math.random()*chars.length)];
+      }
+      return code;
+    }
+    
+    async function sendEmailWithCode(toEmail, itemName){
+      let code= generateValorantCode();
+      let params={
+        to_email: toEmail,
+        code: code,
+        itemName: itemName,
+        username: "Уважаемый клиент"
+      };
+      try{
+        let r= await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+        document.getElementById('statusMsg').textContent=
+          `Код (${code}) отправлен на ${toEmail}. Спасибо за покупку!`;
+        recordPurchase(itemName);
+        launchConfetti();
+      } catch(e){
+        console.error(e);
+        document.getElementById('statusMsg').textContent=
+          "Ошибка при отправке письма (EmailJS).";
+      }
+    }
+    
+    function recordPurchase(itemName){
+      localStorage.setItem("purchased_"+itemName, "true");
+    }
+    
+    function launchConfetti(){
+      const end= Date.now() + 3000;
+      (function frame(){
+        confetti({ particleCount: 25, angle:60,  spread:55, origin:{x:0} });
+        confetti({ particleCount: 25, angle:120, spread:55, origin:{x:1} });
+        if(Date.now()<end) requestAnimationFrame(frame);
+      })();
+    }
+
+    /*************************************************************
+     * Отзывы (локальное хранение)
+     *************************************************************/
+    let currentDetailsItemID= null;
+
+    function getLocalReviews(itemID) {
+      // Получаем отзывы из localStorage
+      try {
+        const saved = localStorage.getItem("reviews_" + itemID);
+        return saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        console.error("Ошибка при получении отзывов:", e);
+        return [];
+      }
+    }
+
+    function saveLocalReview(itemID, star, text) {
+      let reviews = getLocalReviews(itemID);
+      reviews.push({ star, text, date: new Date().toISOString() });
+      localStorage.setItem("reviews_" + itemID, JSON.stringify(reviews));
+      return { success: true };
+    }
+
+    async function openDetailsModal(itemName, itemID, price){
+      currentItemName = itemName;
+      currentItemPrice = price;
+      currentDetailsItemID = itemID;
+      
+      document.getElementById('detailsTitle').textContent = itemName;
+      document.getElementById('detailsDesc').textContent =
+        `Код для игры VALORANT: «${itemName}», цена: ${price} руб.`;
+
+      let arr = getLocalReviews(itemID);
+      renderReviews(arr);
+
+      let purchasedKey = "purchased_" + itemName;
+      if(localStorage.getItem(purchasedKey)){
+        document.getElementById('leaveReviewBtn').style.display = "inline-block";
+      } else {
+        document.getElementById('leaveReviewBtn').style.display = "none";
+      }
+      
+      document.getElementById('reviewForm').style.display = "none";
+      document.getElementById('detailsBuyBtn').onclick = () => {
+        openPaymentModal(itemName, price);
+      };
+
+      document.getElementById('productDetailsOverlay').classList.add('show');
+    }
+    
+    function closeDetailsModal(){
+      document.getElementById('productDetailsOverlay').classList.remove('show');
+      currentDetailsItemID = null;
+    }
+    
+    document.getElementById('productDetailsOverlay').addEventListener('click',(e)=>{
+      if(e.target.id === 'productDetailsOverlay') closeDetailsModal();
+    });
+    
+    function renderReviews(arrayOfReviews){
+      let reviewList= document.getElementById('reviewList');
+      if(!arrayOfReviews || arrayOfReviews.length === 0){
+        reviewList.innerHTML = `<p class="no-reviews">Отзывов пока нет</p>`;
+        return;
+      }
+      let sum = 0; 
+      let html = "";
+      arrayOfReviews.forEach(rv => {
+        sum += rv.star;
+        html += `
+          <div class="review-item">
+            <div class="review-stars">${"★".repeat(rv.star)}${"☆".repeat(5-rv.star)}</div>
+            <div class="review-text">${rv.text}</div>
+          </div>
+        `;
+      });
+      let avg = (sum/arrayOfReviews.length).toFixed(1);
+      reviewList.innerHTML = `<p>Средняя оценка: ${avg}/5</p>` + html;
+    }
+    
+    function toggleReviewForm(){
+      let f = document.getElementById('reviewForm');
+      f.style.display = (f.style.display === "none") ? "block" : "none";
+    }
+    
+    const starRating = document.getElementById('starRating');
+    starRating.querySelectorAll('.star').forEach(star => {
+      star.addEventListener('mouseover', () => {
+        highlightStars(+star.dataset.star);
+      });
+      star.addEventListener('click', () => {
+        starSelected = +star.dataset.star;
+        highlightStars(starSelected);
+      });
+    });
+    
+    function highlightStars(count){
+      starRating.querySelectorAll('.star').forEach(s => {
+        let val = +s.dataset.star;
+        if(val <= count) s.classList.add('selected');
+        else s.classList.remove('selected');
+      });
+    }
+    
+    async function submitReview(){
+      if(starSelected < 1){
+        alert("Укажите оценку (1–5)!");
+        return;
+      }
+      let txt = document.getElementById('reviewText').value.trim();
+      if(!txt){
+        alert("Введите комментарий!");
+        return;
+      }
+      
+      saveLocalReview(currentDetailsItemID, starSelected, txt);
+      
+      alert("Отзыв сохранён!");
+      document.getElementById('reviewText').value = "";
+      starSelected = 0;
+      highlightStars(0);
+      document.getElementById('reviewForm').style.display = "none";
+      
+      let arr = getLocalReviews(currentDetailsItemID);
+      renderReviews(arr);
+    }
+
+    /*************************************************************
+     * FadeIn + ScrollTop
+     *************************************************************/
+    const fadeEls = document.querySelectorAll('.fade-in-on-scroll');
+    function checkFadeIn(){
+      fadeEls.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if(rect.top < window.innerHeight - 100){
+          el.classList.add('visible');
+        }
+      });
+    }
+    window.addEventListener('scroll', checkFadeIn);
+    window.addEventListener('load', checkFadeIn);
+
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', () => {
+      if(window.scrollY > 300) scrollTopBtn.style.display = "block";
+      else scrollTopBtn.style.display = "none";
+    });
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    /*************************************************************
+     * ON LOAD
+     *************************************************************/
+    window.addEventListener('load', checkFadeIn);
+  </script>
+</body>
+</html>
