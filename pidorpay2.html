@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Valorant Points</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- EmailJS (v3) -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <!-- Конфетти -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #f2f2f2;
+      --text-color: #333333;
+      --header-bg: #111111;
+      --header-text: #ffffff;
+      --card-bg: #fdacac;
+      --card-text: #333333;
+      --primary-color: #ff0000;
+      --secondary-color: #007bff;
+      --accent-color: #0056b3;
+      --footer-bg: #111111;
+      --footer-text: #ffffff;
+    }
+    body.dark-theme {
+      --bg-color: #2f2f2f;
+      --text-color: #cccccc;
+      --header-bg: #202020;
+      --header-text: #ffffff;
+      --card-bg: #3c3c3c;
+      --card-text: #dddddd;
+      --primary-color: #bb0a0a;
+      --secondary-color: #0d6efd;
+      --accent-color: #094faf;
+      --footer-bg: #202020;
+      --footer-text: #cccccc;
+    }
+
+    * {
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+      overflow-x: hidden;
+    }
+    a {
+      text-decoration: none; 
+      color: inherit;
+    }
+    .container {
+      width: 90%; 
+      max-width: 1200px; 
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    .header {
+      background: var(--header-bg); 
+      color: var(--header-text);
+      padding: 10px 0; 
+      position: sticky; 
+      top: 0; 
+      z-index: 999;
+      transition: background 0.3s;
+    }
+    .nav {
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+    }
+    .nav-menu {
+      list-style: none; 
+      display: flex; 
+      gap: 20px;
+    }
+    .nav-menu li a {
+      color: var(--header-text); 
+      font-weight: bold; 
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+    .nav-menu li a:hover {
+      color: var(--primary-color);
+    }
+    .logo img {
+      height: 40px;
+    }
+
+    /* THEME SWITCH */
+    .theme-switch {
+      display: inline-flex; 
+      align-items: center; 
+      gap: 5px; 
+      cursor: pointer;
+      user-select: none;
+    }
+    .theme-switch input { display: none; }
+    .slider {
+      width: 50px; 
+      height: 25px; 
+      background: #ccc; 
+      border-radius: 25px;
+      position: relative; 
+      transition: background 0.3s;
+    }
+    .slider:before {
+      content: "";
+      position: absolute; 
+      top: 2px; 
+      left: 2px;
+      width: 21px; 
+      height: 21px; 
+      background: #fff; 
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+    input:checked + .slider { background: #888; }
+    input:checked + .slider:before { transform: translateX(25px); }
+    .sun-icon, .moon-icon {
+      font-size: 18px; 
+      transition: opacity 0.3s;
+    }
+    input:checked ~ .moon-icon { opacity: 1; }
+    input:checked ~ .sun-icon  { opacity: 0.4; }
+    input:not(:checked) ~ .moon-icon { opacity: 0.4; }
+    input:not(:checked) ~ .sun-icon  { opacity: 1; }
+
+    /* HERO */
+    .hero {
+      background: url("https://wallpapers.com/images/featured/valorant-305kescxw5dpup7y.jpg") center/cover no-repeat;
+      color: #fff; 
+      text-align: center; 
+      padding: 80px 0;
+    }
+    .hero h1 {
+      font-size: 36px; 
+      margin-bottom: 20px;
+    }
+    .hero p {
+      font-size: 18px; 
+      margin-bottom: 30px;
+    }
+    .btn {
+      display: inline-block; 
+      background: var(--primary-color); 
+      color: #fff;
+      padding: 15px 30px; 
+      text-transform: uppercase;
+      border: none; 
+      cursor: pointer; 
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    .btn:hover { background: #d00; }
+
+    /* FADE-IN-ON-SCROLL */
+    .fade-in-on-scroll {
+      opacity: 0; 
+      transform: translateY(30px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .fade-in-on-scroll.visible {
+      opacity: 1; 
+      transform: translateY(0);
+    }
+
+    /* CATALOG */
+    .catalog { 
+      padding: 40px 0; 
+    }
+    .catalog h2 {
+      text-align: center; 
+      margin-bottom: 30px;
+    }
+    .product-list {
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 30px; 
+      justify-content: center;
+    }
+    .product-card {
+      background: var(--card-bg); 
+      color: var(--card-text);
+      border-radius: 10px; 
+      text-align: center;
+      width: 220px; 
+      padding: 20px;
+      transition: transform 0.3s, box-shadow 0.3s;
+      transform-style: preserve-3d;
+    }
+    .product-card:hover {
+      transform: rotate3d(0,1,0,10deg) scale(1.05);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+    .product-card img {
+      max-width: 100%; 
+      height: auto; 
+      margin-bottom: 15px;
+    }
+    .product-card h3 {
+      margin-bottom: 10px;
+    }
+    .price {
+      font-weight: bold; 
+      margin-bottom: 15px;
+    }
+    .button-row {
+      display: flex; 
+      justify-content: center; 
+      gap: 10px; 
+      margin-top: 10px;
+    }
+    .details-btn, .buy-btn {
+      padding: 8px 15px; 
+      border: none; 
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .details-btn {
+      background: #555; 
+      color: #fff;
+    }
+    .details-btn:hover { background: #333; }
+    .buy-btn {
+      background: var(--secondary-color); 
+      color: #fff;
+    }
+    .buy-btn:hover {
+      background: var(--accent-color);
+    }
+
+    /* INFO */
+    .info {
+      padding: 40px 0;
+    }
+    .info h2 {
+      text-align: center; 
+      margin-bottom: 20px;
+    }
+    .info ol {
+      list-style: decimal; 
+      margin-left: 40px; 
+      margin-top: 10px;
+    }
+    .info ol li {
+      margin-bottom: 10px;
+    }
+
+    /* SUPPORT */
+    .support {
+      padding: 40px 0; 
+      text-align: center;
+    }
+    .support h2 {
+      margin-bottom: 20px;
+    }
+    .support-icons {
+      display: flex; 
+      justify-content: center; 
+      gap: 30px; 
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .support-icons a {
+      display: flex; 
+      align-items: center; 
+      gap: 10px;
+      color: var(--text-color); 
+      text-decoration: none; 
+      font-weight: bold;
+      border: 1px solid #ccc;
+      padding: 10px 15px;
+      border-radius: 8px;
+      transition: background 0.3s, color 0.3s;
+    }
+    .support-icons a:hover {
+      background: var(--primary-color); 
+      color: #fff;
+    }
+    .support-icons img {
+      width: 24px; height: 24px; object-fit: contain;
+    }
+
+    /* SECTION-BLOCK (TERMS/PRIVACY) */
+    .section-block {
+      padding: 40px 0; 
+      width: 90%; max-width: 800px; 
+      margin: 0 auto;
+    }
+    .section-block h1 {
+      margin-bottom: 20px; font-size: 24px;
+    }
+
+    /* FOOTER */
+    .footer {
+      background: var(--footer-bg); 
+      color: var(--footer-text);
+      text-align: center; 
+      padding: 20px 0; 
+      margin-top: 40px;
+      transition: background 0.3s;
+    }
+    .footer a {
+      color: var(--footer-text);
+      text-decoration: underline;
+    }
+    .disclaimer {
+      margin-top: 10px; 
+      font-size: 0.9em; 
+      color: #bbb;
+    }
+
+    /* MODAL (ОПЛАТА) */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); display: none; align-items: center;
+      justify-content: center; z-index: 1000;
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+    .modal {
+      background: var(--bg-color); color: var(--text-color);
+      padding: 20px; border-radius: 8px; 
+      max-width: 400px; width: 100%; position: relative;
+      transition: background 0.3s, color 0.3s;
+    }
+    .close-btn {
+      position: absolute; top: 10px; right: 10px;
+      background: transparent; border: none; font-size: 22px;
+      cursor: pointer; color: #999; transition: color 0.3s;
+    }
+    .close-btn:hover { color: var(--primary-color); }
+    .modal h3 { margin-bottom: 15px; }
+    label {
+      display: block; margin: 10px 0 5px; font-weight: bold;
+    }
+    .input-text {
+      width: 100%; padding: 8px; margin-bottom: 10px;
+      background: var(--card-bg); color: var(--text-color);
+      border: 1px solid #ccc; transition: background 0.3s, color 0.3s;
+    }
+    .generate-btn, .check-btn {
+      background: var(--primary-color); color: #fff; padding: 10px; border: none;
+      cursor: pointer; transition: background 0.3s; display: inline-block;
+      margin-right: 10px; margin-top: 5px;
+    }
+    .generate-btn:hover, .check-btn:hover {
+      background: #d00;
+    }
+    #statusMsg {
+      margin-top: 10px; font-weight: bold; white-space: pre-wrap;
+    }
+    .qr-section {
+      margin-top: 15px; text-align: center; display: none;
+    }
+    .qr-section img {
+      margin: 10px 0; max-width: 200px;
+    }
+    .link-result {
+      word-break: break-all; font-size: 14px; color: var(--secondary-color);
+    }
+    .link-result a {
+      color: var(--secondary-color); text-decoration: underline;
+    }
+
+    /* MODAL ДЕТАЛЕЙ (ОТЗЫВЫ) */
+    .product-details-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); display: none; align-items: center;
+      justify-content: center; z-index: 1200;
+    }
+    .product-details-overlay.show {
+      display: flex;
+    }
+    .product-details-modal {
+      background: var(--bg-color); color: var(--text-color);
+      padding: 20px; border-radius: 8px; 
+      max-width: 600px; width: 90%; position: relative;
+    }
+    .details-close-btn {
+      position: absolute; top: 10px; right: 10px;
+      background: transparent; border: none; font-size: 22px;
+      cursor: pointer; color: #999; transition: color 0.3s;
+    }
+    .details-close-btn:hover { color: var(--primary-color); }
+    .product-details-modal h2 { margin-bottom: 10px; }
+    #detailsDesc { margin-bottom: 15px; }
+    .review-list {
+      margin-top: 10px; margin-bottom: 20px; max-height: 200px; overflow: auto;
+      border: 1px solid #ccc; padding: 10px; border-radius: 8px; 
+      background: var(--card-bg);
+    }
+    .review-item {
+      margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 6px;
+    }
+    .review-stars { color: #ffcc00; }
+    .no-reviews {
+      font-style: italic; color: #999;
+    }
+    .review-btn {
+      background: #555; color: #fff; border: none; padding: 10px 20px;
+      margin-bottom: 10px; display: inline-block; transition: background 0.3s;
+    }
+    .review-btn:hover { background: #333; }
+    .review-form {
+      margin-top: 10px; margin-bottom: 10px; display: none;
+      border: 1px solid #ccc; padding: 10px; border-radius: 8px;
+      background: var(--card-bg);
+    }
+    .review-form label { margin: 8px 0 5px; display: block; font-weight: normal; }
+    .star-rating {
+      font-size: 20px; cursor: pointer; color: #999;
+    }
+    .star-rating .star:hover,
+    .star-rating .star.selected {
+      color: #ffcc00;
+    }
+    #reviewText {
+      width: 100%; margin-bottom: 10px;
+    }
+    .product-details-modal .buy-btn {
+      margin-top: 10px; background: var(--secondary-color);
+      color: #fff; border: none; padding: 10px 20px; cursor: pointer;
+      transition: background 0.3s;
+    }
+    .product-details-modal .buy-btn:hover {
+      background: var(--accent-color);
+    }
+
+    /* SCROLL-TOP */
+    .scroll-top-btn {
+      position: fixed; bottom: 20px; right: 20px;
+      background: var(--primary-color); color: #fff;
+      border: none; padding: 10px; border-radius: 50%;
+      font-size: 20px; cursor: pointer; display: none;
+      z-index: 2000; transition: background 0.3s;
+    }
+    .scroll-top-btn:hover { background: #d00; }
+
+    /* Адаптив */
+    @media (max-width:768px) {
+      .hero h1 { font-size:28px; }
+      .hero p  { font-size:16px; }
+      .btn { padding:12px24px; font-size:14px; }
+      .nav-menu { flex-wrap:wrap; gap:10px; }
+      .product-list { gap:20px; }
+      .product-card { width:180px; padding:15px; }
+    }
+    @media (max-width:480px) {
+      .hero { padding:60px0; }
+      .hero h1 { font-size:24px; }
+      .hero p  { font-size:14px; }
+      .btn     { padding:10px20px; font-size:12px; }
+      .nav { flex-wrap:wrap; gap:10px; }
+      .nav-menu { flex-direction:column; align-items:center; gap:10px; }
+      .product-list { flex-direction:column; align-items:center; }
+      .product-card { width:100%; max-width:260px; margin:0auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ======= HEADER ======= -->
+  <header class="header">
+    <div class="container nav">
+      <div style="display:flex; align-items:center; gap:20px;">
+        <label class="theme-switch">
+          <input type="checkbox" id="themeToggleInput">
+          <span class="slider"></span>
+          <span class="sun-icon">☀</span>
+          <span class="moon-icon">🌙</span>
+        </label>
+        <div class="logo">
+          <a href="#hero"><img src="https://i.imgur.com/x9emlml.png" alt="Valorant Points"></a>
+        </div>
+      </div>
+      <ul class="nav-menu">
+        <li><a href="#hero" class="active">Главная</a></li>
+        <li><a href="#support">Поддержка</a></li>
+        <li><a href="offer">Соглашение</a></li>
+        <li><a href="policy">Конфиденциальность</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ======= HERO ======= -->
+  <section class="hero fade-in-on-scroll" id="hero">
+    <div class="container">
+      <h1>Valorant Points</h1>
+      <p>Покупайте поинты быстро и безопасно, без переплат</p>
+      <a href="#catalog" class="btn">Смотреть каталог</a>
+    </div>
+  </section>
+
+  <!-- ======= CATALOG (30+ товаров) ======= -->
+  <section class="catalog fade-in-on-scroll" id="catalog">
+    <div class="container">
+      <h2>Наш каталог кодов</h2>
+      <div class="product-list">
+
+        <!-- 1) 300 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="300 VP">
+          <h3>300 Valorant Points</h3>
+          <p>Код на 300 VP</p>
+          <div class="price">339 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('300 Valorant Points','300VP',339)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('300 Valorant Points',339)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 2) 500 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="500 VP">
+          <h3>500 Valorant Points</h3>
+          <p>Код на 500 VP</p>
+          <div class="price">459 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('500 Valorant Points','500VP',459)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('500 Valorant Points',459)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 3) 600 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="600 VP">
+          <h3>600 Valorant Points</h3>
+          <p>Код на 600 VP</p>
+          <div class="price">549 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('600 Valorant Points','600VP',549)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('600 Valorant Points',549)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 4) 700 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="700 VP">
+          <h3>700 Valorant Points</h3>
+          <p>Код на 700 VP</p>
+          <div class="price">629 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('700 Valorant Points','700VP',629)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('700 Valorant Points',629)">Купить</button>
+          </div>
+        </div>
+
+        <!-- (и т.д. до 30+ товаров) -->
+        <!-- Можно вставить те же товары, что были раньше, или любые другие (далее пример) -->
+
+        <!-- 5) 1000 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="1000 VP">
+          <h3>1000 Valorant Points</h3>
+          <p>Код на 1000 VP</p>
+          <div class="price">859 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('1000 Valorant Points','1000VP',859)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('1000 Valorant Points',859)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 6) 1250 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="1250 VP">
+          <h3>1250 Valorant Points</h3>
+          <p>Код на 1250 VP</p>
+          <div class="price">1049 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('1250 Valorant Points','1250VP',999)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('1250 Valorant Points',999)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 7) 2000 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="2000 VP">
+          <h3>2000 Valorant Points</h3>
+          <p>Код на 2000 VP</p>
+          <div class="price">1390 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('2000 Valorant Points','2000VP',1799)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('2000 Valorant Points',1799)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 8) 3000 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="3000 VP">
+          <h3>3000 Valorant Points</h3>
+          <p>Код на 3000 VP</p>
+          <div class="price">2849 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('3000 Valorant Points','3000VP',2499)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('3000 Valorant Points',2499)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 9) 5000 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="5000 VP">
+          <h3>5000 Valorant Points</h3>
+          <p>Код на 5000 VP</p>
+          <div class="price">5200 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('5000 Valorant Points','5000VP',5200)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('5000 Valorant Points',5200)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 10) 7500 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="7500 VP">
+          <h3>7500 Valorant Points</h3>
+          <p>Код на 7500 VP</p>
+          <div class="price">6890 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('7500 Valorant Points','7500VP',6890)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('7500 Valorant Points',6890)">Купить</button>
+          </div>
+        </div>
+
+        <!-- 10) 11500 VP -->
+        <div class="product-card">
+          <img src="https://i.imgur.com/eSTcVmD.png" alt="11500 VP">
+          <h3>11500 Valorant Points</h3>
+          <p>Код на 11500 VP</p>
+          <div class="price">13990 руб.</div>
+          <div class="button-row">
+            <button class="details-btn" onclick="openDetailsModal('11500 Valorant Points','11500',13990)">Подробнее</button>
+            <button class="buy-btn" onclick="openPaymentModal('11500 Valorant Points',13990)">Купить</button>
+          </div>
+        </div>
+
+        <!-- (Добавьте до 30+ карт, как нужно) -->
+
+      </div>
+    </div>
+  </section>
+
+  <!-- INFO -->
+  <section class="info fade-in-on-scroll" id="info">
+    <div class="container">
+      <h2>Как это работает?</h2>
+      <ol>
+        <li>Выбираете нужный номинал кода на сайте, нажимаете «Купить» и выбираете удобный метод оплаты (сейчас Tinkoff).</li>
+        <li>Указываете e-mail, чтобы получить товар и чек оплаты.</li>
+        <li>Оплачиваете, затем жмёте «Проверить оплату» (или ждёте авто-проверку).</li>
+        <li>Если платёж подтвержден, на e-mail придёт код и чек покупки.</li>
+        <li>Если же у вас возникнут любые проблемы связанные с товаром/оплатой/сайтом — обращайтесь в нашу поддержку!</li>
+        <li>Также вы можете ознакомиться с более подробным FAQ на нашем сайте <a href="https://valorant.su/faq" target="_blank">https://valorant.su/faq</a></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- SUPPORT -->
+  <section class="support fade-in-on-scroll" id="support">
+    <div class="container">
+      <h2>Поддержка и контакты</h2>
+      <p>Если возникли вопросы, свяжитесь с нами:</p>
+      <div class="support-icons">
+        <a href="https://t.me/Beast_brawl" target="_blank">
+          <img src="https://i.imgur.com/x45z8on.png" alt="Telegram">
+          Telegram
+        </a>
+        <a href="mailto:info@valorant.su">
+          <img src="https://i.imgur.com/vsRyFJe.png" alt="Email">
+          Почта
+        </a>
+        <a href="https://t.me/Beast_brawl" target="_blank">
+          <img src="https://i.imgur.com/x45z8on.png" alt="Manager">
+          Менеджер
+        </a>
+      </div>
+      <p style="margin-top:20px;">Мы ответим в течение 24 часов. Спасибо за использование!</p>
+    </div>
+  </section>
+
+  <!-- TERMS -->
+  <section class="section-block fade-in-on-scroll" id="terms">
+    <h1>Пользовательское соглашение (Оферта)</h1>
+    <p>Настоящее соглашение является публичной офертой.</p>
+    <p>Используя сайт (valorant.su), вы принимаете эти условия.</p>
+    <p><em>Дата последнего обновления: 31.01.2025 Ознакомиться можно на нашем сайте - <a href="https://valorant.su/offer" target="_blank">https://valorant.su/offer</a></em></p>
+  </section>
+
+  <!-- PRIVACY -->
+  <section class="section-block fade-in-on-scroll" id="privacy">
+    <h1>Политика конфиденциальности</h1>
+    <p>Определяет порядок обработки персональных данных (ФЗ-152) на сайте valorant.su</p>
+    <p><em>Дата последнего обновления: 31.01.2025 Политика конфиденциальности Ознакомиться можно на нашем сайте - <a href="https://valorant.su/policy" target="_blank">https://valorant.su/policy</a></em></p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <p>© 2025 Valorant Points. Все права защищены.</p>
+      <p>
+        <strong>ИП Филимонов Михаил Николаевич</strong>, ИНН: 150204790739 |
+        E-mail: info@valorant.su
+      </p>
+      <p>
+        <a href="offer">Пользовательское соглашение</a> |
+        <a href="policy">Политика конфиденциальности</a>
+      </p>
+      <p class="disclaimer">
+        *VALORANT — торговая марка Riot Games. Не является официальным представительством Riot Games.
+      </p>
+    </div>
+  </footer>
+
+  <!-- MODAL (Оплата) -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      <h3 id="modalTitle">Покупка</h3>
+
+      <label for="emailInput">Ваш e-mail:</label>
+      <input type="email" id="emailInput" class="input-text" placeholder="example@mail.ru">
+
+      <button class="generate-btn" onclick="generateTinkoffPayment()">Сгенерировать оплату</button>
+      <button class="check-btn" onclick="checkTinkoffPayment()">Проверить оплату</button>
+
+      <div class="qr-section" id="qrSection">
+        <p><strong>QR-код для оплаты:</strong></p>
+        <img id="qrCodeImg" src="" alt="QR Code">
+        <p class="link-result" id="paymentLink"></p>
+      </div>
+
+      <div class="autocheck-timer" id="autoCheckTimer"></div>
+      <p id="statusMsg"></p>
+    </div>
+  </div>
+
+  <!-- MODAL (Подробнее + отзывы) -->
+  <div class="product-details-overlay" id="productDetailsOverlay">
+    <div class="product-details-modal">
+      <button class="details-close-btn" onclick="closeDetailsModal()">&times;</button>
+      <h2 id="detailsTitle"></h2>
+      <p id="detailsDesc"></p>
+
+      <h3>Отзывы</h3>
+      <div class="review-list" id="reviewList"></div>
+      <button class="review-btn" id="leaveReviewBtn" onclick="toggleReviewForm()">Оставить отзыв</button>
+
+      <div class="review-form" id="reviewForm">
+        <label>Ваша оценка (1–5):</label>
+        <div class="star-rating" id="starRating">
+          <span class="star" data-star="1">★</span>
+          <span class="star" data-star="2">★</span>
+          <span class="star" data-star="3">★</span>
+          <span class="star" data-star="4">★</span>
+          <span class="star" data-star="5">★</span>
+        </div>
+        <label for="reviewText">Ваш комментарий:</label>
+        <textarea id="reviewText" rows="3"></textarea>
+        <button onclick="submitReview()">Сохранить</button>
+      </div>
+
+      <button class="buy-btn" id="detailsBuyBtn">Купить сейчас</button>
+    </div>
+  </div>
+
+  <!-- SCROLL TOP -->
+  <button class="scroll-top-btn" id="scrollTopBtn">↑</button>
+
+  <script>
+    /*************************************************************
+     * EmailJS INIT
+     *************************************************************/
+    emailjs.init("Pqx7K7cWz3fcw5NOZ"); // <-- подставьте ваш ключ
+    const EMAILJS_SERVICE_ID = "service_4rqximk";
+    const EMAILJS_TEMPLATE_ID= "template_m5d1tk4";
+
+    /*************************************************************
+     * Global Vars
+     *************************************************************/
+    let currentItemName   = "";
+    let currentItemPrice  = 0;
+    let tinkoffPaymentId  = null;
+    let userEmail         = null;
+    let paymentAlreadyDone= false;
+
+    let autoCheckTimerID  = null;
+    let autoCheckCounter  = 30;
+
+    /*************************************************************
+     * Dark/Light toggle
+     *************************************************************/
+    const themeToggleInput = document.getElementById('themeToggleInput');
+    themeToggleInput.addEventListener('change', ()=>{
+      document.body.classList.toggle('dark-theme', themeToggleInput.checked);
+    });
+
+    /*************************************************************
+     * Modal OPEN/CLOSE
+     *************************************************************/
+    function openPaymentModal(itemName, price){
+      currentItemName  = itemName;
+      currentItemPrice = price;
+      tinkoffPaymentId = null;
+      paymentAlreadyDone= false;
+      clearAutoCheck();
+
+      document.getElementById('modalTitle').textContent = `Покупка: ${itemName} (${price} руб.)`;
+      document.getElementById('emailInput').value= "";
+      document.getElementById('qrCodeImg').src= "";
+      document.getElementById('paymentLink').innerHTML= "";
+      document.getElementById('qrSection').style.display= "none";
+      document.getElementById('statusMsg').textContent= "";
+      document.getElementById('autoCheckTimer').textContent= "";
+
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+    function closeModal(){
+      document.getElementById('modalOverlay').classList.remove('show');
+      clearAutoCheck();
+    }
+    document.getElementById('modalOverlay').addEventListener('click', e=>{
+      if(e.target.id==='modalOverlay') closeModal();
+    });
+
+    /*************************************************************
+     * Generate Tinkoff Payment
+     *************************************************************/
+    async function generateTinkoffPayment(){
+      userEmail = document.getElementById('emailInput').value.trim();
+      if(!userEmail){
+        alert("Введите e-mail!");
+        return;
+      }
+      let body = {
+        amount:   currentItemPrice,
+        itemName: currentItemName,
+        email:    userEmail
+      };
+      try {
+        const resp= await fetch("/api/tpay/create", {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify(body)
+        });
+        if(resp.status!==200){
+          document.getElementById('statusMsg').textContent=
+            `Ошибка init Tinkoff: HTTP ${resp.status}`;
+          return;
+        }
+        let json= await resp.json();
+        console.log("Tinkoff /Init =>", json);
+        if(!json.Success){
+          document.getElementById('statusMsg').textContent=
+            "Ошибка при создании оплаты: " + (json.Message||"") + 
+            "\n(Возможно, неверный токен на сервере)";
+          return;
+        }
+        tinkoffPaymentId= json.PaymentId;
+        localStorage.setItem("tinkoff_paymentId", tinkoffPaymentId);
+        localStorage.setItem("tinkoff_itemName",  currentItemName);
+        localStorage.setItem("tinkoff_email",     userEmail);
+
+        let payURL= json.PaymentURL||"";
+        if(payURL){
+          document.getElementById('statusMsg').textContent=
+            "Счёт создан, оплатите. Потом нажмите «Проверить оплату».";
+          window.open(payURL, "_blank");
+        }
+        startAutoCheck();
+      } catch(e){
+        console.error(e);
+        document.getElementById('statusMsg').textContent=
+          "Ошибка запроса /api/tpay/create => " + e;
+      }
+    }
+
+    /*************************************************************
+     * Autocheck
+     *************************************************************/
+    function startAutoCheck(){
+      clearAutoCheck();
+      autoCheckCounter=30;
+      updateTimerText();
+      autoCheckTimerID = setInterval(()=>{
+        autoCheckCounter--;
+        if(autoCheckCounter<=0){
+          autoCheckCounter=30;
+          checkTinkoffPayment(false);
+        }
+        updateTimerText();
+      },1000);
+    }
+    function updateTimerText(){
+      document.getElementById('autoCheckTimer').textContent=
+        `Авто-проверка через ${autoCheckCounter} c.`;
+    }
+    function clearAutoCheck(){
+      if(autoCheckTimerID){
+        clearInterval(autoCheckTimerID);
+        autoCheckTimerID=null;
+      }
+    }
+
+    /*************************************************************
+     * Check Tinkoff Payment
+     *************************************************************/
+    async function checkTinkoffPayment(showAlertIfNoOrder=true){
+      if(paymentAlreadyDone){
+        document.getElementById('statusMsg').textContent=
+          "Оплата уже подтверждена, код отправлен!";
+        return;
+      }
+      if(!tinkoffPaymentId){
+        let pid= localStorage.getItem("tinkoff_paymentId");
+        if(!pid){
+          if(showAlertIfNoOrder) alert("Сначала «Сгенерировать оплату»!");
+          return;
+        }
+        tinkoffPaymentId= pid;
+        userEmail       = localStorage.getItem("tinkoff_email");
+        currentItemName = localStorage.getItem("tinkoff_itemName");
+      }
+      try {
+        let body={ paymentId: tinkoffPaymentId };
+        let resp= await fetch("/api/tpay/status", {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body: JSON.stringify(body)
+        });
+        if(resp.status!==200){
+          document.getElementById('statusMsg').textContent=
+            `Ошибка /api/tpay/status: HTTP ${resp.status}`;
+          return;
+        }
+        let json= await resp.json();
+        console.log("Tinkoff /GetState =>", json);
+
+        if(!json.Success){
+          document.getElementById('statusMsg').textContent=
+            "Ошибка getState: " + (json.Message||"");
+          return;
+        }
+        let st= json.Status||"";
+        if(st==="CONFIRMED"){
+          paymentAlreadyDone= true;
+          clearAutoCheck();
+          document.getElementById('statusMsg').innerHTML=
+            `Оплата подтверждена! Отправляем код...\n<button onclick="leaveReviewNow()" style="margin-top:6px; background:#555; color:#fff; border:none; padding:8px15px; cursor:pointer;">Оставить отзыв</button>`;
+          sendEmailWithCode(userEmail, currentItemName);
+
+        } else if(st==="NEW" || st==="AUTHORIZED"){
+          document.getElementById('statusMsg').textContent=
+            `Статус платежа: ${st}, ещё не завершён.`;
+        } else if(st==="REJECTED" || st==="CANCELED" || st==="REFUNDED"){
+          document.getElementById('statusMsg').textContent=
+            `Платёж: ${st}. Отклонён/отменён/возвращён.`;
+          clearAutoCheck();
+        } else {
+          document.getElementById('statusMsg').textContent=
+            `Статус платежа: ${st}.`;
+        }
+
+      } catch(e){
+        console.error(e);
+        document.getElementById('statusMsg').textContent=
+          "Ошибка getState => " + e;
+      }
+    }
+
+    function leaveReviewNow(){
+      openDetailsModal(currentItemName, "someID", currentItemPrice);
+    }
+
+    /*************************************************************
+     * Send code via EmailJS
+     *************************************************************/
+    function generateValorantCode(){
+      const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let code="VP-";
+      for(let i=0; i<10; i++){
+        code += chars[Math.floor(Math.random()*chars.length)];
+      }
+      return code;
+    }
+    async function sendEmailWithCode(toEmail, itemName){
+      let code= generateValorantCode();
+      let params={
+        to_email: toEmail,
+        code: code,
+        itemName: itemName,
+        username: "Уважаемый клиент"
+      };
+      try{
+        let r= await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+        document.getElementById('statusMsg').textContent=
+          `Код (${code}) отправлен на ${toEmail}. Спасибо за покупку!`;
+        recordPurchase(itemName);
+        launchConfetti();
+      } catch(e){
+        console.error(e);
+        document.getElementById('statusMsg').textContent=
+          "Ошибка при отправке письма (EmailJS).";
+      }
+    }
+    function recordPurchase(itemName){
+      localStorage.setItem("purchased_"+itemName, "true");
+    }
+    function launchConfetti(){
+      const end= Date.now() + 3000;
+      (function frame(){
+        confetti({ particleCount: 25, angle:60,  spread:55, origin:{x:0} });
+        confetti({ particleCount: 25, angle:120, spread:55, origin:{x:1} });
+        if(Date.now()<end) requestAnimationFrame(frame);
+      })();
+    }
+
+    /*************************************************************
+     * Отзывы (заглушки)
+     *************************************************************/
+    let currentDetailsItemID= null;
+    let starSelected= 0;
+
+    async function fetchReviewsFromServer(itemID){
+      // заглушка
+      return [];
+    }
+    async function postReviewToServer(itemID, star, text, email){
+      // заглушка
+      return { success:true };
+    }
+
+    async function openDetailsModal(itemName, itemID, price){
+      currentDetailsItemID= itemID;
+      document.getElementById('detailsTitle').textContent= itemName;
+      document.getElementById('detailsDesc').textContent=
+        `Код для игры VALORANT: «${itemName}», цена: ${price} руб.`;
+
+      let arr= await fetchReviewsFromServer(itemID);
+      renderReviews(arr);
+
+      let purchasedKey= "purchased_"+itemName;
+      if(localStorage.getItem(purchasedKey)){
+        document.getElementById('leaveReviewBtn').style.display= "inline-block";
+      } else {
+        document.getElementById('leaveReviewBtn').style.display= "none";
+      }
+      document.getElementById('reviewForm').style.display="none";
+
+      document.getElementById('detailsBuyBtn').onclick=()=>{
+        openPaymentModal(itemName, price);
+      };
+
+      document.getElementById('productDetailsOverlay').classList.add('show');
+    }
+    function closeDetailsModal(){
+      document.getElementById('productDetailsOverlay').classList.remove('show');
+      currentDetailsItemID= null;
+    }
+    document.getElementById('productDetailsOverlay').addEventListener('click',(e)=>{
+      if(e.target.id==='productDetailsOverlay') closeDetailsModal();
+    });
+    function renderReviews(arrayOfReviews){
+      let reviewList= document.getElementById('reviewList');
+      if(!arrayOfReviews||arrayOfReviews.length===0){
+        reviewList.innerHTML= `<p class="no-reviews">Отзывов пока нет</p>`;
+        return;
+      }
+      let sum=0; let html="";
+      arrayOfReviews.forEach(rv=>{
+        sum+= rv.star;
+        html+=`
+          <div class="review-item">
+            <div class="review-stars">${"★".repeat(rv.star)}${"☆".repeat(5-rv.star)}</div>
+            <div class="review-text">${rv.text}</div>
+          </div>
+        `;
+      });
+      let avg= (sum/arrayOfReviews.length).toFixed(1);
+      reviewList.innerHTML= `<p>Средняя оценка: ${avg}/5</p>`+html;
+    }
+    function toggleReviewForm(){
+      let f= document.getElementById('reviewForm');
+      f.style.display= (f.style.display==="none")?"block":"none";
+    }
+    const starRating= document.getElementById('starRating');
+    starRating.querySelectorAll('.star').forEach(star=>{
+      star.addEventListener('mouseover',()=>{
+        highlightStars(+star.dataset.star);
+      });
+      star.addEventListener('click',()=>{
+        starSelected= +star.dataset.star;
+        highlightStars(starSelected);
+      });
+    });
+    function highlightStars(count){
+      starRating.querySelectorAll('.star').forEach(s=>{
+        let val= +s.dataset.star;
+        if(val<=count) s.classList.add('selected');
+        else s.classList.remove('selected');
+      });
+    }
+    async function submitReview(){
+      if(starSelected<1){
+        alert("Укажите оценку (1–5)!");
+        return;
+      }
+      let txt= document.getElementById('reviewText').value.trim();
+      if(!txt){
+        alert("Введите комментарий!");
+        return;
+      }
+      let email= localStorage.getItem("tinkoff_email")||"anonymous@site.com";
+      let r= await postReviewToServer(currentDetailsItemID, starSelected, txt, email);
+      if(!r.success){
+        alert("Ошибка отзыва: "+ (r.message||""));
+        return;
+      }
+      alert("Отзыв сохранён!");
+      document.getElementById('reviewText').value="";
+      starSelected=0;
+      highlightStars(0);
+      document.getElementById('reviewForm').style.display="none";
+      let arr= await fetchReviewsFromServer(currentDetailsItemID);
+      renderReviews(arr);
+    }
+
+    /*************************************************************
+     * FadeIn + ScrollTop
+     *************************************************************/
+    const fadeEls= document.querySelectorAll('.fade-in-on-scroll');
+    function checkFadeIn(){
+      fadeEls.forEach(el=>{
+        const rect= el.getBoundingClientRect();
+        if(rect.top< window.innerHeight-100){
+          el.classList.add('visible');
+        }
+      });
+    }
+    window.addEventListener('scroll', checkFadeIn);
+    window.addEventListener('load', checkFadeIn);
+
+    const scrollTopBtn= document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll',()=>{
+      if(window.scrollY>300) scrollTopBtn.style.display="block";
+      else scrollTopBtn.style.display="none";
+    });
+    scrollTopBtn.addEventListener('click',()=>{
+      window.scrollTo({ top:0, behavior:"smooth" });
+    });
+
+    /*************************************************************
+     * ON LOAD
+     *************************************************************/
+    window.addEventListener('load', ()=>{
+      let pid= localStorage.getItem("tinkoff_paymentId");
+      if(pid){
+        console.log("Незавершённый Tinkoff платеж:", pid);
+      }
+    });
+  </script>
+</body>
+</html>
