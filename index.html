@@ -705,9 +705,10 @@
     </div>
   </footer>
 
-  <!-- JavaScript без изменений, только генерация кода будет другой -->
+
+
   <script>
-    // Изменить генерацию кода для Clash Royale
+        // Изменить генерацию кода для Clash Royale
     function generateClashRoyaleCode(){
       const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       let code="CR-";
@@ -737,8 +738,275 @@
           "Ошибка при отправке письма (EmailJS).";
       }
     }
+    /*************************************************************
+     * EmailJS INIT
+     *************************************************************/
+    emailjs.init("Pqx7K7cWz3fcw5NOZ"); // <-- подставьте ваш ключ
+    const EMAILJS_SERVICE_ID = "service_4rqximk";
+    const EMAILJS_TEMPLATE_ID= "template_m5d1tk4";
 
-    /* Остальной JavaScript остается без изменений */
+    /*************************************************************
+     * Global Vars
+     *************************************************************/
+    let currentItemName   = "";
+    let currentItemPrice  = 0;
+    let userEmail         = "";
+    let starSelected      = 0;
+    let demoReviews       = {};
+
+    /*************************************************************
+     * Payment Demo Functions (без API)
+     *************************************************************/
+    function simulatePayment() {
+      userEmail = document.getElementById('emailInput').value.trim();
+      if(!userEmail) {
+        alert("Введите e-mail!");
+        return;
+      }
+      
+      document.getElementById('statusMsg').textContent = "Демонстрационная версия: оплата сразу будет успешной.";
+      setTimeout(() => {
+        document.getElementById('statusMsg').textContent = "Оплата успешна! Отправляем код...";
+        sendEmailWithCode(userEmail, currentItemName);
+      }, 1500);
+    }
+
+    function simulateCheck() {
+      userEmail = document.getElementById('emailInput').value.trim();
+      if(!userEmail) {
+        alert("Введите e-mail!");
+        return;
+      }
+      
+      document.getElementById('statusMsg').textContent = "Проверка платежа...";
+      setTimeout(() => {
+        document.getElementById('statusMsg').textContent = "Оплата подтверждена! Отправляем код...";
+        sendEmailWithCode(userEmail, currentItemName);
+      }, 1000);
+    }
+
+    /*************************************************************
+     * Modal Payment Functions
+     *************************************************************/
+    function openPaymentModal(itemName, price){
+      currentItemName = itemName;
+      currentItemPrice = price;
+      document.getElementById('modalTitle').textContent = 
+        `Покупка: ${itemName} (${price} руб.)`;
+
+      document.getElementById('statusMsg').textContent = "";
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+    
+    function closeModal(){
+      document.getElementById('modalOverlay').classList.remove('show');
+    }
+    
+    document.getElementById('modalOverlay').addEventListener('click', e=>{
+      if(e.target.id==='modalOverlay') closeModal();
+    });
+
+    /*************************************************************
+     * Send code via EmailJS
+     *************************************************************/
+    function generateValorantCode(){
+      const chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let code="VP-";
+      for(let i=0; i<10; i++){
+        code += chars[Math.floor(Math.random()*chars.length)];
+      }
+      return code;
+    }
+    
+    async function sendEmailWithCode(toEmail, itemName){
+      let code= generateValorantCode();
+      let params={
+        to_email: toEmail,
+        code: code,
+        itemName: itemName,
+        username: "Уважаемый клиент"
+      };
+      try{
+        let r= await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
+        document.getElementById('statusMsg').textContent=
+          `Код (${code}) отправлен на ${toEmail}. Спасибо за покупку!`;
+        recordPurchase(itemName);
+        launchConfetti();
+      } catch(e){
+        console.error(e);
+        document.getElementById('statusMsg').textContent=
+          "Ошибка при отправке письма (EmailJS).";
+      }
+    }
+    
+    function recordPurchase(itemName){
+      localStorage.setItem("purchased_"+itemName, "true");
+    }
+    
+    function launchConfetti(){
+      const end= Date.now() + 3000;
+      (function frame(){
+        confetti({ particleCount: 25, angle:60,  spread:55, origin:{x:0} });
+        confetti({ particleCount: 25, angle:120, spread:55, origin:{x:1} });
+        if(Date.now()<end) requestAnimationFrame(frame);
+      })();
+    }
+
+    /*************************************************************
+     * Отзывы (локальное хранение)
+     *************************************************************/
+    let currentDetailsItemID= null;
+
+    function getLocalReviews(itemID) {
+      // Получаем отзывы из localStorage
+      try {
+        const saved = localStorage.getItem("reviews_" + itemID);
+        return saved ? JSON.parse(saved) : [];
+      } catch (e) {
+        console.error("Ошибка при получении отзывов:", e);
+        return [];
+      }
+    }
+
+    function saveLocalReview(itemID, star, text) {
+      let reviews = getLocalReviews(itemID);
+      reviews.push({ star, text, date: new Date().toISOString() });
+      localStorage.setItem("reviews_" + itemID, JSON.stringify(reviews));
+      return { success: true };
+    }
+
+    async function openDetailsModal(itemName, itemID, price){
+      currentItemName = itemName;
+      currentItemPrice = price;
+      currentDetailsItemID = itemID;
+      
+      document.getElementById('detailsTitle').textContent = itemName;
+      document.getElementById('detailsDesc').textContent =
+        `Код для игры VALORANT: «${itemName}», цена: ${price} руб.`;
+
+      let arr = getLocalReviews(itemID);
+      renderReviews(arr);
+
+      let purchasedKey = "purchased_" + itemName;
+      if(localStorage.getItem(purchasedKey)){
+        document.getElementById('leaveReviewBtn').style.display = "inline-block";
+      } else {
+        document.getElementById('leaveReviewBtn').style.display = "none";
+      }
+      
+      document.getElementById('reviewForm').style.display = "none";
+      document.getElementById('detailsBuyBtn').onclick = () => {
+        openPaymentModal(itemName, price);
+      };
+
+      document.getElementById('productDetailsOverlay').classList.add('show');
+    }
+    
+    function closeDetailsModal(){
+      document.getElementById('productDetailsOverlay').classList.remove('show');
+      currentDetailsItemID = null;
+    }
+    
+    document.getElementById('productDetailsOverlay').addEventListener('click',(e)=>{
+      if(e.target.id === 'productDetailsOverlay') closeDetailsModal();
+    });
+    
+    function renderReviews(arrayOfReviews){
+      let reviewList= document.getElementById('reviewList');
+      if(!arrayOfReviews || arrayOfReviews.length === 0){
+        reviewList.innerHTML = `<p class="no-reviews">Отзывов пока нет</p>`;
+        return;
+      }
+      let sum = 0; 
+      let html = "";
+      arrayOfReviews.forEach(rv => {
+        sum += rv.star;
+        html += `
+          <div class="review-item">
+            <div class="review-stars">${"★".repeat(rv.star)}${"☆".repeat(5-rv.star)}</div>
+            <div class="review-text">${rv.text}</div>
+          </div>
+        `;
+      });
+      let avg = (sum/arrayOfReviews.length).toFixed(1);
+      reviewList.innerHTML = `<p>Средняя оценка: ${avg}/5</p>` + html;
+    }
+    
+    function toggleReviewForm(){
+      let f = document.getElementById('reviewForm');
+      f.style.display = (f.style.display === "none") ? "block" : "none";
+    }
+    
+    const starRating = document.getElementById('starRating');
+    starRating.querySelectorAll('.star').forEach(star => {
+      star.addEventListener('mouseover', () => {
+        highlightStars(+star.dataset.star);
+      });
+      star.addEventListener('click', () => {
+        starSelected = +star.dataset.star;
+        highlightStars(starSelected);
+      });
+    });
+    
+    function highlightStars(count){
+      starRating.querySelectorAll('.star').forEach(s => {
+        let val = +s.dataset.star;
+        if(val <= count) s.classList.add('selected');
+        else s.classList.remove('selected');
+      });
+    }
+    
+    async function submitReview(){
+      if(starSelected < 1){
+        alert("Укажите оценку (1–5)!");
+        return;
+      }
+      let txt = document.getElementById('reviewText').value.trim();
+      if(!txt){
+        alert("Введите комментарий!");
+        return;
+      }
+      
+      saveLocalReview(currentDetailsItemID, starSelected, txt);
+      
+      alert("Отзыв сохранён!");
+      document.getElementById('reviewText').value = "";
+      starSelected = 0;
+      highlightStars(0);
+      document.getElementById('reviewForm').style.display = "none";
+      
+      let arr = getLocalReviews(currentDetailsItemID);
+      renderReviews(arr);
+    }
+
+    /*************************************************************
+     * FadeIn + ScrollTop
+     *************************************************************/
+    const fadeEls = document.querySelectorAll('.fade-in-on-scroll');
+    function checkFadeIn(){
+      fadeEls.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if(rect.top < window.innerHeight - 100){
+          el.classList.add('visible');
+        }
+      });
+    }
+    window.addEventListener('scroll', checkFadeIn);
+    window.addEventListener('load', checkFadeIn);
+
+    const scrollTopBtn = document.getElementById('scrollTopBtn');
+    window.addEventListener('scroll', () => {
+      if(window.scrollY > 300) scrollTopBtn.style.display = "block";
+      else scrollTopBtn.style.display = "none";
+    });
+    scrollTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    /*************************************************************
+     * ON LOAD
+     *************************************************************/
+    window.addEventListener('load', checkFadeIn);
   </script>
 </body>
 </html>
